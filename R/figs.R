@@ -117,12 +117,12 @@ subttl2 <- paste0('Trend from ', yrstr2, ' to ', yrend2, ': approximate slope ',
 bassz <- 14
 ptsz <- 3
 
-p1 <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) + 
+pobs <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) + 
   ggplot2::geom_point(data = moddat, ggplot2::aes(y = value), size = 2) +
-  # ggplot2::geom_line(ggplot2::aes(y = value), size = 0.75, alpha = alpha) + 
-  # ggplot2::geom_line(ggplot2::aes(y = annvalue), alpha = alpha, colour = 'tomato1') +
+  # ggplot2::geom_line(ggplot2::aes(y = value), size = 0.75, colour = 'deepskyblue3', alpha = alpha) +
   # coord_cartesian(ylim = c(0,45)) +
-  scale_y_log10() +
+  scale_y_log10() + 
+  # ggplot2::geom_line(ggplot2::aes(y = value), alpha = alpha, colour = 'deepskyblue3', size = 1) +
   ggplot2::theme_minimal(base_family = 'serif', base_size = bassz) + 
   ggplot2::theme(
     legend.position = 'top', 
@@ -133,6 +133,17 @@ p1 <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) +
   ) + 
   ggplot2::labs(
     y = ylab
+  )
+
+
+p1 <- show_prddoy(mod, ylab = ylab) + 
+  theme_minimal(base_size = bassz) + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    legend.position = 'top'
+  ) + 
+  labs(
+    color = NULL
   )
 
 p2 <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) + 
@@ -154,61 +165,66 @@ p2 <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) +
   )
 
 # plot output
-p3 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr, y = bt_avg)) + 
+p3 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr, y = bt_met)) + 
   ggplot2::geom_point(colour = 'deepskyblue3', size = ptsz) +
   ggplot2::geom_errorbar(ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), colour = 'deepskyblue3') +
   # ggplot2::geom_ribbon(data = toplo2, ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), fill = 'pink', alpha = 0.4) +
   # ggplot2::geom_line(data = toplo2, color = 'pink') +
   ggplot2::theme_minimal(base_family = 'serif', base_size = bassz) + 
+  scale_y_log10() + 
   ggplot2::theme(
     axis.title.x = ggplot2::element_blank(), 
     panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank()
+    # panel.grid.minor = ggplot2::element_blank()
   ) +
   ggplot2::labs(
     y = ylab
   )
 
 # plot output
-p4 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr, y = bt_avg)) + 
-  ggplot2::geom_point(colour = 'deepskyblue3', size = ptsz) +
+p4 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr)) + 
+  ggplot2::geom_point(aes( y = bt_met), colour = 'deepskyblue3', size = ptsz) +
   ggplot2::geom_errorbar(ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), colour = 'deepskyblue3') +
   ggplot2::geom_ribbon(data = toplo2a, ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), fill = 'pink', alpha = 0.4) +
-  ggplot2::geom_line(data = toplo2a, color = 'pink') +
+  ggplot2::geom_line(data = toplo2a, aes(y = bt_avg), color = 'pink') +
+  scale_y_log10() +
   ggplot2::theme_minimal(base_family = 'serif', base_size =bassz) + 
   ggplot2::theme(
     axis.title.x = ggplot2::element_blank(), 
     panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank()
+    # panel.grid.minor = ggplot2::element_blank()
   ) +
   ggplot2::labs(
-    y = ylab
+    y = ylab,
+    caption = subttl1
   )
 
 # plot output
-p5 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr, y = bt_avg)) + 
-  ggplot2::geom_point(colour = 'deepskyblue3', size = ptsz) +
+p5 <- ggplot2::ggplot(data = toplo1, ggplot2::aes(x = yr)) + 
+  ggplot2::geom_point(aes(y = bt_met), colour = 'deepskyblue3', size = ptsz) +
   ggplot2::geom_errorbar(ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), colour = 'deepskyblue3') +
   ggplot2::geom_ribbon(data = toplo2b, ggplot2::aes(ymin = bt_lwr, ymax = bt_upr), fill = 'pink', alpha = 0.4) +
-  ggplot2::geom_line(data = toplo2b, color = 'pink') +
+  ggplot2::geom_line(data = toplo2b, aes(y = bt_avg), color = 'pink') +
   ggplot2::theme_minimal(base_family = 'serif', base_size =bassz) + 
+  scale_y_log10() +
   ggplot2::theme(
     axis.title.x = ggplot2::element_blank(), 
     panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank()
+    # panel.grid.minor = ggplot2::element_blank()
   ) +
   ggplot2::labs(
-    y = ylab
+    y = ylab, 
+    caption = subttl2
   )
 
-wd <- 6
-hi <- 4.5
+wd <- 9
+hi <- 3
 
-png('figs/graphabp1.png', height = hi, width = wd, family = 'serif', units = 'in', res = 300)
+png('figs/prddoy.png', height = 4, width = 9, family = 'serif', units = 'in', res = 300)
 p1
 dev.off()
 
-png('~/Desktop/graphabp2.png', height = hi, width = wd, family = 'serif', units = 'in', res = 300)
+png('figs/graphabp2.png', height = hi, width = wd, family = 'serif', units = 'in', res = 300)
 p2
 dev.off()
 
