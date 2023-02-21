@@ -1,5 +1,6 @@
 library(wqtrends)
 library(tidyverse)
+library(gratia)
 
 # gam example ---------------------------------------------------------------------------------
 
@@ -119,10 +120,10 @@ ptsz <- 3
 
 pobs <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) + 
   ggplot2::geom_point(data = moddat, ggplot2::aes(y = value), size = 2) +
-  # ggplot2::geom_line(ggplot2::aes(y = value), size = 0.75, colour = 'deepskyblue3', alpha = alpha) +
+  # ggplot2::geom_line(ggplot2::aes(y = value), linewidth = 0.75, colour = 'deepskyblue3', alpha = alpha) +
   # coord_cartesian(ylim = c(0,45)) +
   scale_y_log10() + 
-  # ggplot2::geom_line(ggplot2::aes(y = value), alpha = alpha, colour = 'deepskyblue3', size = 1) +
+  # ggplot2::geom_line(ggplot2::aes(y = value), alpha = alpha, colour = 'deepskyblue3', linewidth = 1) +
   ggplot2::theme_minimal(base_family = 'serif', base_size = bassz) + 
   ggplot2::theme(
     legend.position = 'top', 
@@ -135,6 +136,8 @@ pobs <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) +
     y = ylab
   )
 
+yrsmth <- draw(mod) + 
+  theme_minimal(base_size = bassz)
 
 p1 <- show_prddoy(mod, ylab = ylab) + 
   theme_minimal(base_size = bassz) + 
@@ -148,10 +151,11 @@ p1 <- show_prddoy(mod, ylab = ylab) +
 
 p2 <- ggplot2::ggplot(prds, ggplot2::aes(x = date)) + 
   ggplot2::geom_point(data = moddat, ggplot2::aes(y = value), size = 2) +
-  ggplot2::geom_line(ggplot2::aes(y = value), size = 0.75, colour = 'deepskyblue3', alpha = alpha) +
+  ggplot2::geom_ribbon(aes(ymin = value - sevalue, ymax = value + sevalue), fill = 'deepskyblue3', alpha = 0.5) + 
+  ggplot2::geom_line(ggplot2::aes(y = value), linewidth = 0.75, colour = 'deepskyblue3', alpha = alpha) +
   # coord_cartesian(ylim = c(0,45)) +
-  scale_y_log10() + 
-  # ggplot2::geom_line(ggplot2::aes(y = value), alpha = alpha, colour = 'deepskyblue3', size = 1) +
+  scale_y_log10() +
+  # ggplot2::geom_line(ggplot2::aes(y = value), alpha = alpha, colour = 'deepskyblue3', linewidth = 1) +
   ggplot2::theme_minimal(base_family = 'serif', base_size = bassz) + 
   ggplot2::theme(
     legend.position = 'top', 
@@ -226,6 +230,10 @@ dev.off()
 
 png('figs/graphabp2.png', height = hi, width = wd, family = 'serif', units = 'in', res = 300)
 p2
+dev.off()
+
+png('figs/yrsmth.png', height = hi, width = wd / 2, family = 'serif', units = 'in', res = 300)
+yrsmth
 dev.off()
 
 png('figs/graphabp3.png', height = hi, width = wd, family = 'serif', units = 'in', res = 300)
