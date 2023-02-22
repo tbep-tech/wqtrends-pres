@@ -16,7 +16,7 @@ fls <- list.files(here::here('figs'), pattern = '^tnsta', full.names = T)
 knitr::include_graphics(fls)
 ```
 
-## Chloropyll-a
+## Chlorophyll-a
 
 ```{r}
 fls <- list.files(here::here('figs'), pattern = '^chlasta', full.names = T)
