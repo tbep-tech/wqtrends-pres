@@ -379,3 +379,44 @@ png('figs/trndgam.png', height = 6, width = 11, family = 'serif', units = 'in', 
 p
 dev.off()
 
+# prdseries for each gam --------------------------------------------------
+
+load(file = here('data/tbchlamod.RData'))
+load(file = here('data/tbtnmod.RData'))
+
+tbchlamod <- tbchlamod %>% 
+  mutate(
+    param = 'chla'
+  )
+tbtnmod <- tbtnmod %>% 
+  mutate(
+    param = 'tn'
+  )
+
+toprd <- bind_rows(tbchlamod, tbtnmod)
+
+for(i in 1:nrow(toprd)){
+  
+  cat(i, 'of', nrow(toprd), '\n')
+  
+  dat <- toprd[i, ]
+  prm <- dat$param
+  modin <- dat$mod[[1]]
+  sta <- dat$station
+  flnm <- paste0(prm, 'sta', sta, '.png')  
+  
+  ylb <- case_when(
+    prm == 'tn' ~ 'TN (mg/L)',
+    prm == 'chla' ~ 'chl-a (ug/L)'
+  )
+  
+  plt <- show_prdseries(modin, ylab = ylb) + 
+    labs(
+      subtitle = paste('Station', dat$station)
+    )
+  
+  png(filename = here('figs', flnm), height = 2, width = 7, units = 'in', res = 200)
+  print(plt)
+  dev.off()
+  
+}

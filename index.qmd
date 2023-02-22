@@ -1,0 +1,26 @@
+---
+title: "GAM Tampa Bay predictions"
+format: html
+editor: source
+
+execute:
+  echo: false
+---
+
+::: {.panel-tabset}
+
+## Total Nitrogen
+
+```{r}
+fls <- list.files(here::here('figs'), pattern = '^tnsta', full.names = T)
+knitr::include_graphics(fls)
+```
+
+## Chloropyll-a
+
+```{r}
+fls <- list.files(here::here('figs'), pattern = '^chlasta', full.names = T)
+knitr::include_graphics(fls)
+```
+
+:::
