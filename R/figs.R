@@ -466,7 +466,7 @@ toplo <- modcmp %>%
     pvalcol = ifelse(pval < 0.05, T, F), 
     coefsgn = sign(slos), 
     coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
-    test = factor(test, levels = c('sk', 'mt'), labels = c('Seasonal Kendall', 'GAM/Mixed'))
+    test = factor(test, levels = c('mt', 'sk'), labels = c('GAM/Mixed', 'Seasonal Kendall'))
   ) %>% 
   left_join(stations, by = c('segment' = 'bay_segment', 'station' = 'epchc_station'))
 
