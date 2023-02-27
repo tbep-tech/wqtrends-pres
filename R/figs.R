@@ -8,6 +8,7 @@ library(ggmap)
 library(patchwork)
 library(EnvStats)
 library(lubridate)
+library(mgcv)
 
 # gam example ---------------------------------------------------------------------------------
 
@@ -547,3 +548,124 @@ for(i in 1:nrow(toprd)){
   dev.off()
   
 }
+
+# time and temp mod -------------------------------------------------------
+
+moddat <- epcdata %>% 
+  select(
+    segment = bay_segment, 
+    station = epchc_station, 
+    date = SampleTime, 
+    yr, 
+    chla, 
+    matches('^Temp')
+  ) %>% 
+  mutate(
+    date = as.Date(date), 
+    doy = yday(date), 
+    cont_year = decimal_date(date), 
+    mo = month(date, label = T),
+    temp = rowMeans(select(., matches('^Temp')), na.rm = T)
+  ) %>% 
+  select(-matches('^Temp', ignore.case = F)) %>% 
+  na.omit() %>% 
+  filter(yr > 2001) %>% 
+  filter(station == 66) %>% 
+  arrange(date)
+
+# time and temp
+frm <- "log10(chla) ~ s(cont_year)"
+
+fct <- 12
+
+# get upper bounds of knots
+kts <- fct * length(unique(moddat$yr))
+
+p1 <- gsub('(^.*)s\\(cont\\_year\\).*$', '\\1', frm)
+p2 <- paste0('s(cont_year, k = ', kts, ') + te(temp,doy)')
+frmin <- paste0(p1, p2)
+
+mod <- try(gam(as.formula(frmin),
+               data = moddat,
+               na.action = na.exclude,
+               select = F
+), silent = T)
+
+# drops upper limit on knots until it works
+while(inherits(mod, 'try-error')){
+  
+  cat('reducing knots for cont_year spline from', kts, '\n')
+  
+  fct <- fct -1
+  
+  # get upper bounds of knots
+  kts <- fct * length(unique(moddat$yr))
+  
+  p1 <- gsub('(^.*)s\\(cont\\_year\\).*$', '\\1', frm)
+  p2 <- paste0('s(cont_year, k = ', kts, ') + te(temp,doy)')
+  frmin <- paste0(p1, p2)
+  
+  mod <- try(gam(as.formula(frmin),
+                 data = moddat,
+                 na.action = na.exclude,
+                 select = F
+  ), silent = T)
+  
+}
+
+thm <- function(base_size = 11){
+  theme_minimal(base_size = base_size) + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.text = element_text(size = rel(1.1))
+  )
+}
+
+p1a <- smooth_estimates(mod, smooth = 's(cont_year)', n = 1000) %>% 
+  draw(residuals = T) + 
+  thm() + 
+  labs(
+    x = NULL
+  )
+p1b <- smooth_estimates(mod, smooth = 'te(temp,doy)', n = 500, dist = 0.1) %>% 
+  draw() + 
+  thm() + 
+  labs(
+    x = "Temp C", 
+    y = "Day of year"
+  ) + 
+  scale_x_continuous(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0)) 
+
+p1 <- p1a + p1b + plot_layout(ncol = 2)
+
+png('figs/withtemp.png', height = 4.5, width = 10, family = 'serif', units = 'in', res = 300)
+p1
+dev.off()
+
+# slice
+slcgrd <- data_slice(mod, temp = evenly(temp, n = 100), doy = c(25, 233),
+                     cont_year = floor(evenly(cont_year, 4))) %>% 
+  filter(
+    (doy == 25 & temp < 23) | (doy == 233 & temp > 25)
+  )
+
+slcprd <- fitted_values(mod, data = slcgrd, scale = 'response', dist = 0.1) %>% 
+  mutate(doy = factor(doy))
+
+
+p2 <- ggplot(slcprd, aes(x = temp, y = fitted)) + 
+  geom_ribbon(aes(ymin = lower, ymax = upper, fill = doy), alpha = .2) +
+  geom_line(aes(color = doy)) + 
+  facet_wrap(~cont_year, ncol = 4) +
+  thm(14) + 
+  labs(
+    y = 'log10(chl-a)',
+    x = 'Temp (C)', 
+    color = 'Day of\nyear', 
+    fill = 'Day of\nyear'
+  )
+
+png('figs/withtempslc.png', height = 4.5, width = 10, family = 'serif', units = 'in', res = 300)
+p2
+dev.off()

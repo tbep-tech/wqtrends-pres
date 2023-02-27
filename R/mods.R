@@ -1,8 +1,10 @@
-devtools::load_all("../wqtrends", helpers = F)
-# library(wqtrends)
+# devtools::load_all("../wqtrends", helpers = F)
+library(wqtrends)
 library(tidyverse)
 library(lubridate)
 library(tbeptools)
+
+# tn, chla mods for all stations ------------------------------------------
 
 tomod <- epcdata %>% 
   select(
@@ -37,4 +39,23 @@ tbtnmod <- tomod %>%
       
     })
   )
+
+tbchlamod <- tomod %>% 
+  filter(param == 'chla') %>% 
+  group_by(segment, station) %>% 
+  nest() %>% 
+  mutate(
+    mod = purrr::pmap(list(station, data), function(station, data){
+      
+      cat(station, '\n')
+      
+      anlz_gam(data, trans = 'log10')
+      
+    })
+  )
   
+save(tbtnmod, file = 'data/tbtnmod.RData')
+save(tbchlamod, file = 'data/tbchlamod.RData')
+  
+
+
